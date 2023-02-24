@@ -75,7 +75,7 @@ public class Player : MonoBehaviour
 
     public void takeDMG(double d)
     {
-        if(PLAYER_DEAD)
+        if(PLAYER_DEAD || GameManager.Instance.isInMenu)
         {
             return;
         }

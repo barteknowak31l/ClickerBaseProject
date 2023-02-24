@@ -28,7 +28,7 @@ public class Thief : Companion
 
         while (true)
         {
-            if (COMPANION_NUMBER != -1 && player.player.PLAYER_DEAD == false && player.player.changingLevel == false)
+            if (COMPANION_NUMBER != -1 && player.player.PLAYER_DEAD == false && player.player.changingLevel == false && GameManager.Instance.isInMenu == false)
             {
                 //zadaj dmg przeciwnikowi
                 calculateStatsValues();
@@ -73,6 +73,8 @@ public class Thief : Companion
 
     protected override void onDismiss()
     {
+        if (player == null)
+            player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStats>();
         switch (COMPANION_NUMBER)
         {
             case 0:

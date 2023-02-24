@@ -106,8 +106,6 @@ public class PlayerCompanion : MonoBehaviour, IDataPersistence
             merc1 = bard;
         }
 
-        Debug.Log(warrior == null);
-        Debug.Log(mage == null);
 
         warrior.LEVEL = WARRIOR_LVL;
         warrior.COMPANION_NUMBER = WARRIOR_HIRED;
@@ -141,6 +139,7 @@ public class PlayerCompanion : MonoBehaviour, IDataPersistence
 
     public void hire(Companion c)
     {
+
         if(c.LEVEL <= 0)
         {
             return;
@@ -280,6 +279,7 @@ public class PlayerCompanion : MonoBehaviour, IDataPersistence
 
         initData();
 
+
     }
 
     public void SaveData(GameData data)
@@ -303,4 +303,27 @@ public class PlayerCompanion : MonoBehaviour, IDataPersistence
         data.BARD_HIRED = this.BARD_HIRED ;
     }
 
+
+    public void hireAfterLoad()
+    {
+    
+        if(merc0 != null)
+        {
+            Companion c0 = merc0;
+            dismiss(merc0);
+            hire(c0);
+        }
+        if (merc1 != null)
+        {
+            Companion c1 = merc1;
+            dismiss(merc1);
+            hire(c1);
+        }
+    }
+
+
+    public void afterLoadData()
+    {
+        ;
+    }
 }

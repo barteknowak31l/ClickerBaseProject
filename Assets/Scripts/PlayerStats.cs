@@ -31,6 +31,7 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
     public int RESURRECT_LEVEL;
     public int RESURRECT_LEVEL_DISTANCE;
     public int MAX_LEVEL;
+    public int MAX_LEVEL_REACHED;
     public int MAX_ZONE;
     public int STAGE;
     public int MAX_STAGE_REACHED;
@@ -42,10 +43,21 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
     public string ZONE_NAME3;
     public string ZONE_NAME4;
 
+    public int resetsDone;
 
     [Header("Stats")]
     public double GOLD;
+    public int maxBossesKilled; //keeps track of farther boss killed
 
+
+    [Header("Prestige multipliers")]
+    public double RESET_POINTS_GOLD;
+    public double RESET_POINTS_DPC;
+    public double RESET_POINTS_DPS;
+    public double RESET_POINTS_HP;
+    public int RESET_ARMOR_COST_MULT;
+
+    public int maxIridiumPerkLvl;
 
     [Header("CLICKDMG")]
     //DPC - damage per click
@@ -55,7 +67,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
     public double PERK_DPC;
     public double COMP1_DPC;
     public double COMP2_DPC;
-    public double RESET_POINTS_DPC;
     public double RESET_PERKS_DPC;
 
     [Header("DPS")]
@@ -68,7 +79,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
     public double PERK_DPS;
     public double COMP1_DPS;
     public double COMP2_DPS;
-    public double RESET_POINTS_DPS;
     public double RESET_PERKS_DPS;
 
 
@@ -81,7 +91,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
     public double PERK_HP;
     public double COMP1_HP;
     public double COMP2_HP;
-    public double RESET_POINTS_HP;
     public double RESET_PERKS_HP;
 
     [Header("ARMOR")]
@@ -155,7 +164,7 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
     // Start is called before the first frame update
     void Start()
     {
-        perks.calculateDPC();
+        perks.calculateAll();
         setStats();
         CURRENT_HP = HP;
 
@@ -200,6 +209,9 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
             aboutPanel.SetActive(false);
 
         }
+
+        
+
     }
 
     public void settingsOnClick()
@@ -248,8 +260,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         //MAX_STAGE_REACHED = 0;
         //STAGE_COMPLETED = false;
         //ZONE_NAME = ZONE_NAME1;
-
-        LEVEL_PROGRESS_BAR.current = CURRENT_LEVEL % 30;
 
         //GOLD = 1;
         ADDITIONAL_GOLD_DROP = 1;
@@ -307,29 +317,52 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         HP_BAR.max = HP;
         HP_BAR.current = CURRENT_HP;
 
+        //setStats();
+
     }
 
     public void setDPC()
     {
-        DPC = FLAT_DPC * PERK_DPC * COMP1_DPC * COMP2_DPC * RESET_POINTS_DPC * RESET_PERKS_DPC * BARD_CLICKDMG_BUFF;
+        DPC = FLAT_DPC * PERK_DPC * COMP1_DPC * COMP2_DPC * System.Math.Pow(10, RESET_POINTS_DPC) * RESET_PERKS_DPC * BARD_CLICKDMG_BUFF;
+
+        if(DPC > GameManager.Instance.biggestNumber)
+        {
+            DPC = GameManager.Instance.biggestNumber;
+        }
+
     }
 
     public void setDPS()
     {
-        DPS = FLAT_DPS * PERK_DPS * COMP1_DPS * COMP2_DPS * RESET_POINTS_DPS * RESET_PERKS_DPS;
+        DPS = FLAT_DPS * PERK_DPS * COMP1_DPS * COMP2_DPS * System.Math.Pow(10, RESET_POINTS_DPS) * RESET_PERKS_DPS;
+
+        if (DPS > GameManager.Instance.biggestNumber)
+        {
+            DPS = GameManager.Instance.biggestNumber;
+        }
     }
 
     public void setHP()
     {
         double ratio = CURRENT_HP / HP;
 
-        HP = FLAT_HP * PERK_HP * COMP1_HP * COMP2_HP * RESET_POINTS_HP * RESET_PERKS_HP;
+        HP = FLAT_HP * PERK_HP * COMP1_HP * COMP2_HP * System.Math.Pow(10,RESET_POINTS_HP) * RESET_PERKS_HP;
+
+        if (HP > GameManager.Instance.biggestNumber)
+        {
+            HP = GameManager.Instance.biggestNumber;
+        }
+
 
         CURRENT_HP = HP * ratio;
         HP_BAR.current = CURRENT_HP;
         HP_BAR.max = HP;
     }
 
+    public double getMaxHP()
+    {
+        return FLAT_HP * PERK_HP * COMP1_HP * COMP2_HP * System.Math.Pow(10, RESET_POINTS_HP) * RESET_PERKS_HP;
+    }
     public void setARMOR()
     {
         ARMOR = PERK_ARMOR + COMP1_ARMOR + COMP2_ARMOR;
@@ -343,6 +376,8 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
 
     public void setStats()
     {
+        handleResetPoints();
+
         setDPC();
         setDPS();
         setHP();
@@ -354,7 +389,10 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
     {
         CURRENT_LEVEL++;
 
-
+        if(getEnemyLevel() > MAX_LEVEL_REACHED)
+        {
+            MAX_LEVEL_REACHED = getEnemyLevel();
+        }
 
 
         if (CURRENT_LEVEL > MAX_LEVEL)
@@ -452,6 +490,9 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
 
     public void ChangeDimension(int dimension)
     {
+
+        setStats();
+
         switch (dimension)
         {
             case 1:
@@ -554,7 +595,7 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         if (STAGE > MAX_STAGE_REACHED)
         {
             MAX_STAGE_REACHED = STAGE;
-            specialPerks.POINTS++;
+            //specialPerks.POINTS++;
         }
 
         STAGE_COMPLETED = false;
@@ -577,6 +618,11 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
 
     public void heal(double heal)
     {
+        if(GameManager.Instance.isInMenu)
+        {
+            return;
+        }
+
         CURRENT_HP += heal;
 
         if (CURRENT_HP > HP)
@@ -660,10 +706,19 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         perks.resetPerks();
         companion.resetCompanion();
 
+        if(companion.merc0 != null)
+        {
+            companion.dismiss(companion.merc0);
+        }
+        if (companion.merc1 != null)
+        {
+            companion.dismiss(companion.merc1);
+        }
+
         setStats();
         CURRENT_HP = HP;
 
-        player.enemy.initializeEnemy();
+        player.enemy.HP = 0;
 
         perkButtons1.updateTextFields();
         perkButtons2.updateTextFields();
@@ -697,9 +752,139 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         HP_BAR.max = HP;
     }
 
+    public void handleResetPoints()
+    {
+        switch(resetsDone)
+        {
+            case 0:
+                {
+                    RESET_POINTS_DPC = 1;
+                    RESET_POINTS_DPS = 1;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 0;
+                    RESET_ARMOR_COST_MULT = 0;
+                    break;
+                }
+            case 1:
+                {
+                    RESET_POINTS_DPC = 9.5;
+                    RESET_POINTS_DPS = 9.4;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 2.4;
+                    RESET_ARMOR_COST_MULT = 121;
+                    break;
+                }
+            case 2:
+                {
+                    RESET_POINTS_DPC = 17;
+                    RESET_POINTS_DPS = 16.9;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 4.5;
+                    RESET_ARMOR_COST_MULT = 241;
+                    break;
+                }
+            case 3:
+                {
+                    RESET_POINTS_DPC = 25.9;
+                    RESET_POINTS_DPS = 25.8;
+                    RESET_POINTS_HP = 1f;
+                    RESET_POINTS_GOLD = 6;
+                    RESET_ARMOR_COST_MULT = 361;
+                    break;
+                }
+            case 4:
+                {
+                    RESET_POINTS_DPC = 37;
+                    RESET_POINTS_DPS = 36.5;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 8.1;
+                    RESET_ARMOR_COST_MULT = 481;
+                    break;
+                }
+            case 5:
+                {
+                    RESET_POINTS_DPC = 44;
+                    RESET_POINTS_DPS = 43.9;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 11;
+                    RESET_ARMOR_COST_MULT = 601;
+                    break;
+                }
+            case 6:
+                {
+                    RESET_POINTS_DPC = 51.5;
+                    RESET_POINTS_DPS = 51.3;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 13.74;
+                    RESET_ARMOR_COST_MULT = 721;
+                    break;
+                }
+            case 7:
+                {
+                    RESET_POINTS_DPC = 60;
+                    RESET_POINTS_DPS = 59.9;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 16.3;
+                    RESET_ARMOR_COST_MULT = 841;
+                    break;
+                }
+            case 8:
+                {
+                    RESET_POINTS_DPC = 67;
+                    RESET_POINTS_DPS = 66.9;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 18.65;
+                    RESET_ARMOR_COST_MULT = 961;
+                    break;
+                }
+            default:
+                {
+                    RESET_POINTS_DPC = 180;
+                    RESET_POINTS_DPS = 180;
+                    RESET_POINTS_HP = 1;
+                    RESET_POINTS_GOLD = 50;
+                    RESET_ARMOR_COST_MULT = 1081;
+                    break;
+                }
+        }
+    }
+    public void setResetsDone(int s)
+    {
+        resetsDone = s;
+    }
 
+    public void afterBossKilled()
+    {
+        int lvl = getEnemyLevel();
+        int boss = 0;
+        while(lvl >0)
+        {
+            lvl -= 30;
+            boss += 1;
+        }
 
+        if(boss > maxBossesKilled)
+        {
+            maxBossesKilled = boss;
+            specialPerks.POINTS++;
+        }
 
+    }
+
+    void calculateLevelBar()
+    {
+
+        if (CURRENT_LEVEL == 30 || CURRENT_LEVEL == 60 || CURRENT_LEVEL == 90 || CURRENT_LEVEL == 120)
+        {
+            LEVEL_PROGRESS_BAR.current = LEVEL_PROGRESS_BAR.max;
+            player.enemy.isBoss = true;
+        }
+        else
+        {
+            LEVEL_PROGRESS_BAR.current = CURRENT_LEVEL % 30;
+            player.enemy.isBoss = false;
+        }
+    }
     public void LoadData(GameData data)
     {
         this.GOLD = data.GOLD;
@@ -716,7 +901,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         this.FLAT_DPC = data.FLAT_DPC;
         this.COMP1_DPC = data.COMP1_DPC;
         this.COMP2_DPC = data.COMP2_DPC;
-        this.RESET_POINTS_DPC = data.RESET_POINTS_DPC;
         this.RESET_PERKS_DPC = data.RESET_PERKS_DPC;
 
         this.DPS = data.DPS;
@@ -724,7 +908,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         this.PERK_DPS = data.PERK_DPS;
         this.COMP1_DPS = data.COMP1_DPS;
         this.COMP2_DPS = data.COMP2_DPS;
-        this.RESET_POINTS_DPS = data.RESET_POINTS_DPS;
         this.RESET_PERKS_DPS = data.RESET_PERKS_DPS;
 
         this.HP = data.HP;
@@ -733,7 +916,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         this.PERK_HP = data.PERK_HP;
         this.COMP1_HP = data.COMP1_HP;
         this.COMP2_HP = data.COMP2_HP;
-        this.RESET_POINTS_HP = data.RESET_POINTS_HP;
         this.RESET_PERKS_HP = data.RESET_PERKS_HP;
 
         this.ARMOR = data.ARMOR;
@@ -746,12 +928,23 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
 
         this.ARMOR_PEN = data.ARMOR_PEN;
 
+        this.resetsDone = data.RESETS_DONE;
+        this.MAX_LEVEL_REACHED = data.MAX_LEVEL_REACHED;
 
-        //setStats();
+        //prestige
+        this.RESET_POINTS_DPC = data.RESET_POINTS_DPC;
+        this.RESET_POINTS_DPS = data.RESET_POINTS_DPS;
+        this.RESET_POINTS_HP = data.RESET_POINTS_HP;
+        this.RESET_POINTS_GOLD = data.RESET_POINTS_GOLD;
+        this.maxBossesKilled = data.maxBossesKilled;
+
+
+        perks.calculateAll();
+        setStats();
+        fullHeal();
         HP_BAR.max = HP;
         HP_BAR.current = CURRENT_HP;
-        LEVEL_PROGRESS_BAR.current = CURRENT_LEVEL % 30;
-
+        calculateLevelBar();
 
         if (CURRENT_LEVEL <= 30)
         {
@@ -779,6 +972,9 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
 
 
     }
+
+   
+
     public void SaveData(GameData data)
     {
         data.GOLD = this.GOLD;
@@ -795,7 +991,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         data.FLAT_DPC = this.FLAT_DPC;
         data.COMP1_DPC = this.COMP1_DPC;
         data.COMP2_DPC = this.COMP2_DPC;
-        data.RESET_POINTS_DPC = this.RESET_POINTS_DPC;
         data.RESET_PERKS_DPC = this.RESET_PERKS_DPC;
 
         data.DPS = this.DPS;
@@ -803,7 +998,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         data.PERK_DPS = this.PERK_DPS;
         data.COMP1_DPS = this.COMP1_DPS;
         data.COMP2_DPS = this.COMP2_DPS;
-        data.RESET_POINTS_DPS = this.RESET_POINTS_DPS;
         data.RESET_PERKS_DPS = this.RESET_PERKS_DPS;
 
         data.HP = this.HP;
@@ -812,7 +1006,6 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         data.PERK_HP = this.PERK_HP;
         data.COMP1_HP = this.COMP1_HP;
         data.COMP2_HP = this.COMP2_HP;
-        data.RESET_POINTS_HP = this.RESET_POINTS_HP;
         data.RESET_PERKS_HP = this.RESET_PERKS_HP;
 
         data.ARMOR = this.ARMOR;
@@ -824,9 +1017,23 @@ public class PlayerStats : MonoBehaviour, IDataPersistence
         data.RESET_PERKS_ARMOR = this.RESET_PERKS_ARMOR;
 
         data.ARMOR_PEN = this.ARMOR_PEN;
+
+        data.MAX_LEVEL_REACHED = this.MAX_LEVEL_REACHED;
+        data.RESETS_DONE = resetsDone;
+
+
+        //prestige
+        data.RESET_POINTS_DPC = this.RESET_POINTS_DPC;
+        data.RESET_POINTS_DPS = this.RESET_POINTS_DPS;
+        data.RESET_POINTS_GOLD = this.RESET_POINTS_GOLD;
+        data.maxBossesKilled = this.maxBossesKilled;
     }
 
-
+    public void afterLoadData()
+    {
+        companion.hireAfterLoad();
+        setStats();
+    }
 
 
 }

@@ -54,6 +54,14 @@ public class DataPersistenceManager : MonoBehaviour
         {
             dataPersistenceObj.LoadData(gameData);
         }
+
+
+        //invoke afterLoadData function
+        foreach (IDataPersistence dataPersistenceObj in dataPersistenceObjects)
+        {
+            dataPersistenceObj.afterLoadData();
+        }
+
     }
 
     public void SaveGame()

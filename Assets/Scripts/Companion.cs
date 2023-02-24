@@ -9,11 +9,14 @@ public abstract class Companion : MonoBehaviour
     protected Enemy enemy;
 
     //player to give companion buffs;
+    [SerializeField]
     protected PlayerStats player;
 
     public int LEVEL;
     public double LEVEL_UP_COST;
     public double LEVEL_UP_COST_MULT;
+    public double costStaticDiv;
+    public double logBase;
 
     [Range(0,0.16f)]
     public double LVL_COST_REDUCTION;
@@ -92,14 +95,13 @@ public abstract class Companion : MonoBehaviour
 
     public void calculateCost()
     {
-        if (LEVEL + 1 < 75)
-        {
-            LEVEL_UP_COST = (basedOnEnemyHP(LEVEL + 1) / 15) * LEVEL_UP_COST_MULT;
-        }
-        else
-        {
-            LEVEL_UP_COST = (basedOnEnemyHP(LEVEL + 1) / 15) * LEVEL_UP_COST_MULT * System.Math.Min(3, System.Math.Pow(1.025f, LEVEL + 1 - 75));
-        }
+        double goldDrop = player.player.enemy.enemyGoldFormula(LEVEL);
+
+        LEVEL_UP_COST = System.Math.Max(((basedOnEnemyHP(LEVEL) / costStaticDiv) * System.Math.Max(System.Math.Log(LEVEL, logBase), 1) * LEVEL_UP_COST_MULT),
+                                            System.Math.Max(goldDrop, goldDrop * System.Math.Log(LEVEL + 1, logBase)) * LEVEL_UP_COST_MULT);
+
+
+        LEVEL_UP_COST *= LEVEL_UP_COST_MULT * System.Math.Log(LEVEL+2, 2);
 
         if (player.specialPerks.MERC_COST_REDUCTION > 0)
             LEVEL_UP_COST *= (1 - player.specialPerks.MERC_COST_REDUCTION * LVL_COST_REDUCTION);
@@ -109,31 +111,12 @@ public abstract class Companion : MonoBehaviour
     {
         double L;
 
-        if (level <= 140)
-        {
-            L = System.Math.Ceiling(10 * (level - 1 + System.Math.Pow(1.55f, level - 1)));
-        }
-        else if (level > 140 && level <= 500)
-        {
-            L = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, level - 140)));
-        }
-        else if (level > 500 && level <= 200000)
-        {
-            double product = 1;
-            for (int i = 501; i < level; i++)
-            {
-                product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
-            }
+        //wielomianowe koszty
 
-            L = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * product));
+        double mult = 1000f;
+        double exp = 1.12;
 
-
-        }
-        else
-        {
-            L = System.Math.Ceiling(System.Math.Pow(1.545f, level - 200001) * 1.240f * System.Math.Pow(10, 25409) + (level - 1) * 10);
-        }
-
+        L = mult * level * level + System.Math.Pow(exp, level);
 
         return L;
     }

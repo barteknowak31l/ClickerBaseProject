@@ -24,7 +24,6 @@ public class GameData
     public double PERK_DPC;
     public double COMP1_DPC;
     public double COMP2_DPC;
-    public double RESET_POINTS_DPC;
     public double RESET_PERKS_DPC;
 
 
@@ -33,7 +32,6 @@ public class GameData
     public double PERK_DPS;
     public double COMP1_DPS;
     public double COMP2_DPS;
-    public double RESET_POINTS_DPS;
     public double RESET_PERKS_DPS;
 
     public double HP;
@@ -42,7 +40,6 @@ public class GameData
     public double PERK_HP;
     public double COMP1_HP;
     public double COMP2_HP;
-    public double RESET_POINTS_HP;
     public double RESET_PERKS_HP;
 
 
@@ -55,6 +52,13 @@ public class GameData
     public double RESET_PERKS_ARMOR;
 
     public double ARMOR_PEN;
+
+
+    //prestige levels
+    public double RESET_POINTS_DPC;
+    public double RESET_POINTS_DPS;
+    public double RESET_POINTS_HP;
+    public double RESET_POINTS_GOLD;
 
     ////PlayerPerks
     public int DPC_PERKS;
@@ -69,7 +73,8 @@ public class GameData
     public int PERK_COST_REDUCTION;
     public int MERC_COST_REDUCTION;
     public int MERC_PASSIVE_BOOST;
-    public int BOSS_HP_REDUCTION;
+    public int ENEMY_HP_REDUCTION;
+    public int maxBossesKilled;
 
     //PlayerCompanion
     public int WARRIOR_LVL;
@@ -85,6 +90,10 @@ public class GameData
     public int CLERIC_HIRED;
     public int THIEF_HIRED;
     public int BARD_HIRED;
+
+
+    public int RESETS_DONE;
+    public int MAX_LEVEL_REACHED;
 
     // the values defined in this constructor will be the default values
     // the game starts with when there's no data to load
@@ -104,7 +113,6 @@ public class GameData
         this.FLAT_DPC = 1;
         this.COMP1_DPC = 1;
         this.COMP2_DPC = 1;
-        this.RESET_POINTS_DPC = 1;
         this.RESET_PERKS_DPC = 1;
 
         this.DPS = 6;
@@ -112,7 +120,6 @@ public class GameData
         this.PERK_DPS = 1;
         this.COMP1_DPS = 1;
         this.COMP2_DPS = 1;
-        this.RESET_POINTS_DPS = 1;
         this.RESET_PERKS_DPS = 1;
 
         this.HP = 10;
@@ -121,7 +128,6 @@ public class GameData
         this.PERK_HP = 1;
         this.COMP1_HP = 1;
         this.COMP2_HP = 1;
-        this.RESET_POINTS_HP = 1;
         this.RESET_PERKS_HP = 1;
 
         this.ARMOR = 0;
@@ -133,6 +139,13 @@ public class GameData
         this.RESET_PERKS_ARMOR = 1;
 
         this.ARMOR_PEN = 0;
+
+
+        //prestige
+        this.RESET_POINTS_DPC = 1;
+        this.RESET_POINTS_DPS = 1;
+        this.RESET_POINTS_HP = 1;
+        this.RESET_POINTS_GOLD = 0;
 
         //playerPersks
         this.DPC_PERKS = 1;
@@ -160,5 +173,18 @@ public class GameData
         this.BARD_LVL = 0;
         this.BARD_HIRED = -1;
 
-    }
+
+        this.RESETS_DONE = 0;
+        this.MAX_LEVEL_REACHED = 1;
+
+
+        //special perks
+        this.POINTS=0;
+        this.PERK_COST_REDUCTION=0;
+        this.MERC_COST_REDUCTION=0;
+        this.MERC_PASSIVE_BOOST=0;
+        this.ENEMY_HP_REDUCTION=0;
+        this.maxBossesKilled=0;
+
+}
 }

@@ -124,6 +124,10 @@ public class Archer : Companion
 
     protected override void onDismiss()
     {
+
+        if (player == null)
+            player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStats>();
+
         switch (COMPANION_NUMBER)
         {
             case 0:

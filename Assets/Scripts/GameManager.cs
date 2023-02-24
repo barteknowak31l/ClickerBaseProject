@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
         snowman = 1
     }
 
+    public double biggestNumber = 9.99e297;
 
     //level related
     public int currentLevel;
@@ -24,6 +25,14 @@ public class GameManager : MonoBehaviour
     
 
     public PlayerStats playerStats;
+
+    public bool isInMenu;
+    public GameObject perksMenu;
+    public GameObject mercMenu;
+    public GameObject prestigeMenu;
+    public GameObject dimensionMenu;
+    public GameObject settingsMenu;
+    public GameObject aboutMenu;
 
 
 
@@ -49,10 +58,17 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        playerStats = GetComponent<PlayerStats>();
         currentLevel = 0;
         enemiesKilled = 0;
         isEnemyReady = false;
+        isInMenu = false;
+        Screen.orientation = ScreenOrientation.LandscapeLeft;
+    }
+
+
+    private void Update()
+    {
+        isInMenu = perksMenu.activeInHierarchy || mercMenu.activeInHierarchy || prestigeMenu.activeInHierarchy || dimensionMenu.activeInHierarchy || settingsMenu.activeInHierarchy || aboutMenu.activeInHierarchy;
     }
 
 
@@ -103,9 +119,15 @@ public class GameManager : MonoBehaviour
 
         }
 
+
         s = s.Remove(s.Length - 1);
         s = s.Remove(s.Length - 1);
         s = s.Remove(s.Length - 1);
+
+        if (exp>100)
+        {
+            s = s.Remove(s.Length-1);
+        }
 
 
         if (x <= 1000)
@@ -609,13 +631,14 @@ public class GameManager : MonoBehaviour
         }
 
 
-        if (System.Math.Pow(10, 297) < x && x <= System.Math.Pow(10, 300))
+        if (System.Math.Pow(10, 297) < x && x < System.Math.Pow(10, 300))
         {
             return s + " GOD" ;
         }
 
+        return "INF";
 
-        return string.Format("{0:#.##e00}", x);
+        //return string.Format("{0:#.##e00}", x);
     }
 
 }

@@ -30,6 +30,11 @@ public class PerkButtons : MonoBehaviour
         updateTextFields();
     }
 
+    public void perkMenuOnClick()
+    {
+        updateTextFields();
+    }
+
     public void updateTextFields()
     {
         DPC_text_lvl.text = "LVL: " + perks.DPC_PERKS.ToString();

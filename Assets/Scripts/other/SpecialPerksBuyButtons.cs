@@ -16,7 +16,7 @@ public class SpecialPerksBuyButtons : MonoBehaviour
 
     private void Update()
     {
-        if(stats.specialPerks.BOSS_HP_REDUCTION >= 6)
+        if(stats.specialPerks.ENEMY_HP_REDUCTION >= stats.maxIridiumPerkLvl)
         {
             t1.text = "MAX";
         }
@@ -26,7 +26,7 @@ public class SpecialPerksBuyButtons : MonoBehaviour
         }
 
 
-        if (stats.specialPerks.PERK_COST_REDUCTION >= 6)
+        if (stats.specialPerks.PERK_COST_REDUCTION >= stats.maxIridiumPerkLvl)
         {
             t2.text = "MAX";
         }
@@ -35,7 +35,7 @@ public class SpecialPerksBuyButtons : MonoBehaviour
             t2.text = "BUY";
         }
 
-        if (stats.specialPerks.MERC_PASSIVE_BOOST >= 6)
+        if (stats.specialPerks.MERC_PASSIVE_BOOST >= stats.maxIridiumPerkLvl)
         {
             t3.text = "MAX";
         }
@@ -44,7 +44,7 @@ public class SpecialPerksBuyButtons : MonoBehaviour
             t3.text = "BUY";
         }
 
-        if (stats.specialPerks.MERC_COST_REDUCTION >= 6)
+        if (stats.specialPerks.MERC_COST_REDUCTION >= stats.maxIridiumPerkLvl)
         {
             t4.text = "MAX";
         }

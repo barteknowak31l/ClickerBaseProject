@@ -10,7 +10,7 @@ public class Background : MonoBehaviour
 
     private void Update()
     {
-        child.sprite = sprite.sprite;
+        //child.sprite = sprite.sprite;
     }
 
     void transitionEnd()

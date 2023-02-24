@@ -15,10 +15,21 @@ public class Enemy : MonoBehaviour
     [SerializeField] // current hp
     public double healthPoints;    
     public double HP;
+    public int LEVEL;
 
-    public double DAMAGE;
+    [Header("balance stats")]
     public double DAMAGE_MULTIPLIER;
     public double DAMAGE_DIVIDER;
+    public double GOLD_MULTIPLIER;
+    public double GOLD_DIVIDER;
+    public double GOLD_STATIC_DIVIDER = 15;
+    public double BOSS_HP_MULT;
+    public double IRIDIUM_HP_REDUCTION;
+    public double HP_EXP = 1.15f;
+    public double HP_DIVIDER = 1.5f;
+    [Header("")]
+
+    public double DAMAGE;
 
     public double ARMOR;
     public double ARMOR_BASE;
@@ -29,12 +40,11 @@ public class Enemy : MonoBehaviour
     public double ARMOR_PEN;
 
     public double GOLD ;
-    public double GOLD_MULTIPLIER;
+
 
     public double STAGE_MULT;
 
     public bool isBoss;
-    public double BOSS_HP_MULT;
 
 
 
@@ -76,13 +86,15 @@ public class Enemy : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
 
         enemyIsAttacking = false;
-        isBoss = false;
+
+        LEVEL = player.stats.getEnemyLevel();
+        isBoss = (LEVEL % 30 == 0);
+
 
         //anim.Play("idle");
 
         //start applying DPS
-        StartCoroutine(attack());
-        initializeEnemy();
+
 
 
         regularPos = new Vector3(5.84f,-2.25f,0f);
@@ -91,9 +103,9 @@ public class Enemy : MonoBehaviour
         bossPos = new Vector3(5.84f, -1.6f, 0f);
         bossScale = new Vector3(2.1533f, 2.1533f, 2.1533f);
 
-        transform.position = regularPos;
-        transform.localScale = regularScale;
 
+        StartCoroutine(attack());
+        initializeEnemy();
 
     }
 
@@ -102,6 +114,10 @@ public class Enemy : MonoBehaviour
     {
 
         type = Random.Range(0, 17);
+
+
+        LEVEL = player.stats.getEnemyLevel();
+        isBoss = (LEVEL % 30 == 0);
 
         spriteRenderer.enabled = true;
         //set stats based on current lvl (1-120) and stage (strefa,wymiar) - fields currentLevel and stage in PlayerStats
@@ -148,7 +164,7 @@ public class Enemy : MonoBehaviour
 
     public void takeDMG(double d)
     {
-        if(ENEMY_IS_ALIVE == false)
+        if(ENEMY_IS_ALIVE == false || GameManager.Instance.isInMenu)
         {
             return;
         }
@@ -163,7 +179,7 @@ public class Enemy : MonoBehaviour
         if(enemyIsAttacking == false)
         {
             //anim.Play("hurt");
-            playHurt();
+            //playHurt();
         }
 
         //temporary - there will be a formula that includes armorpen and armor stats
@@ -198,6 +214,12 @@ public class Enemy : MonoBehaviour
         playDie();
 
         player.stats.fullHeal();
+
+
+        if(isBoss)
+        {
+            player.stats.afterBossKilled();
+        }
 
 
         ENEMY_IS_ALIVE = false;
@@ -257,83 +279,177 @@ public class Enemy : MonoBehaviour
     void dropGold()
     {
         player.stats.GOLD += GOLD * player.stats.ADDITIONAL_GOLD_DROP;
+
+        if(player.stats.GOLD > GameManager.Instance.biggestNumber)
+        {
+            player.stats.GOLD = GameManager.Instance.biggestNumber;
+        }
+
     }
 
 
     void calculateHP()
     {
-
-        if (player.stats.getEnemyLevel() <= 140)
-        {
-            HP = System.Math.Ceiling(10 * (player.stats.getEnemyLevel() - 1 + System.Math.Pow(1.55f, player.stats.getEnemyLevel() - 1)));
-        }
-        else if (player.stats.getEnemyLevel() > 140 && player.stats.getEnemyLevel() <= 500)
-        {
-            HP = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, player.stats.getEnemyLevel() - 140)));
-        }
-        else if (player.stats.getEnemyLevel() > 500 && player.stats.getEnemyLevel() <= 200000)
-        {
-            double product = 1;
-            for (int i = 501; i < player.stats.getEnemyLevel(); i++)
-            {
-                product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
-            }
-
-            HP = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * product));
-
-
-        }
-        else
-        {
-            HP = System.Math.Ceiling(System.Math.Pow(1.545f, player.stats.getEnemyLevel() - 200001) * 1.240f * System.Math.Pow(10, 25409) + (player.stats.getEnemyLevel() - 1) * 10);
-        }
-
-        //co 10 enemy jest trudniejszy
-        int y = 0;
-        int tmp = player.stats.getEnemyLevel();
-        while (tmp > 10)
-        {
-            tmp -= 10;
-            y++;
-        }
-
-        if (player.stats.getEnemyLevel() > 10)
-            HP *= (double)((player.stats.getEnemyLevel() + 1) / 10f) * System.Math.Pow(1.5,y); 
+        HP =  1000f*player.stats.getEnemyLevel()*player.stats.getEnemyLevel() + 5*player.stats.DPC + System.Math.Ceiling((player.stats.getEnemyLevel()/100)*player.stats.DPC)  + System.Math.Pow(HP_EXP, player.stats.getEnemyLevel());
 
         if (isBoss)
         {
-            if (player.stats.specialPerks.BOSS_HP_REDUCTION == 0)
-                HP *= BOSS_HP_MULT;
-            else
-                HP = HP * BOSS_HP_MULT * player.stats.specialPerks.BOSS_HP_REDUCTION * 0.1f;
+            HP *= BOSS_HP_MULT;
         }
+
+        if(player.stats.specialPerks.ENEMY_HP_REDUCTION>0)
+        HP = HP * (1 - player.stats.specialPerks.ENEMY_HP_REDUCTION *IRIDIUM_HP_REDUCTION);
+
+        HP = HP / HP_DIVIDER;
+
+        if (HP > GameManager.Instance.biggestNumber)
+        {
+            HP = GameManager.Instance.biggestNumber;
+        }
+
 
     }
 
     void calculateGold()
     {
-        if(player.stats.getEnemyLevel() < 75)
+
+        /*        double exp = player.stats.RESET_POINTS_GOLD;
+
+                GOLD = ((HP / GOLD_STATIC_DIVIDER) * GOLD_MULTIPLIER / GOLD_DIVIDER) * System.Math.Pow(10, exp);
+
+                if (player.stats.getEnemyLevel() > 75)
+                {
+                    GOLD *= 3;
+                }*/
+
+        GOLD = enemyGoldFormula(player.stats.getEnemyLevel());
+
+
+    }
+
+    public double enemyGoldFormula(int lvl)
+    {
+        double exp = player.stats.RESET_POINTS_GOLD;
+        double hp = 1000f * lvl * lvl + 5 * player.stats.perks.DPC_formula(lvl) + System.Math.Ceiling((lvl / 100) * player.stats.perks.DPC_formula(lvl)) + System.Math.Pow(1.2, lvl);
+       
+        if (player.stats.specialPerks.ENEMY_HP_REDUCTION > 0)
+            hp = hp * player.stats.specialPerks.ENEMY_HP_REDUCTION * IRIDIUM_HP_REDUCTION;
+
+        double gold = ((hp / GOLD_STATIC_DIVIDER) * GOLD_MULTIPLIER / GOLD_DIVIDER) * System.Math.Pow(10, exp);
+
+        if (lvl>75)
         {
-            GOLD = (HP / 15) * GOLD_MULTIPLIER;
-        }
-        else
-        {
-            GOLD = (HP / 15) * GOLD_MULTIPLIER * System.Math.Min(3, System.Math.Pow(1.025f, player.stats.getEnemyLevel() - 75));
+            gold *= 3;
         }
 
 
+        if (gold > GameManager.Instance.biggestNumber)
+        {
+            gold = GameManager.Instance.biggestNumber;
+        }
+
+        return gold;
     }
 
     void calculateDamage()
     {
 
-        if (player.stats.getEnemyLevel() < 75)
+
+
+        double mult = 10f;
+
+        int lvl = player.stats.getEnemyLevel();
+
+        if (lvl > 120)
         {
-            DAMAGE = (HP / DAMAGE_DIVIDER) * DAMAGE_MULTIPLIER * player.stats.BARD_ENEMYDMG_DEBUFF;
+            mult = 20f;
         }
-        else
+        else if (lvl > 240)
         {
-            DAMAGE = (HP / DAMAGE_DIVIDER) * DAMAGE_MULTIPLIER * System.Math.Min(3, System.Math.Pow(1.025f, player.stats.getEnemyLevel() - 75)) * player.stats.BARD_ENEMYDMG_DEBUFF;
+            mult = 80f;
+        }
+        else if (lvl > 360)
+        {
+            mult = 160f;
+        }
+        else if (lvl > 480)
+        {
+            mult = 320f;
+        }
+        else if (lvl > 600)
+        {
+            mult = 640f;
+        }
+        else if (lvl > 720)
+        {
+            mult = 1280f;
+        }
+        else if (lvl > 840)
+        {
+            mult = 3840f;
+        }
+        else if (lvl > 960)
+        {
+            mult = 11520f;
+        }
+        else if (lvl > 1080)
+        {
+            mult = 34560f;
+        }
+        else if (lvl > 1200)
+        {
+            mult = 103680f;
+        }
+        else if (lvl > 1320)
+        {
+            mult = 311040f;
+        }
+        else if (lvl > 1440)
+        {
+            mult = 933120f;
+        }
+        else if (lvl > 1560)
+        {
+            mult = 2799360f;
+        }
+        else if (lvl > 1660)
+        {
+            mult = 8398080f;
+        }
+        else if (lvl > 1800)
+        {
+            mult = 25194240f;
+        }
+        else if (lvl > 1920)
+        {
+            mult = 75582720f;
+        }
+        else if (lvl > 2040)
+        {
+            mult = 226748160f;
+        }
+        else if (lvl > 2160)
+        {
+            mult = 680244480f;
+        }
+        else if (lvl > 2280)
+        {
+            mult = 2040733440f;
+        }
+        else if (lvl > 2400)
+        {
+            mult = 6122200320f;
+        }
+
+
+        DAMAGE = 10 + (System.Math.Pow(lvl, 2f)*mult)* DAMAGE_MULTIPLIER/ DAMAGE_DIVIDER;
+
+        DAMAGE = System.Math.Max(DAMAGE, player.stats.getMaxHP()/30);
+
+
+        if (DAMAGE > GameManager.Instance.biggestNumber)
+        {
+            DAMAGE = GameManager.Instance.biggestNumber;
         }
 
 

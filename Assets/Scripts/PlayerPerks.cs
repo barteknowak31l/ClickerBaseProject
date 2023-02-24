@@ -40,7 +40,9 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
     public double ARMOR_PEN_PERK_COST;
     public double ARMOR_PEN_PERK_COST_MULT;
 
-
+    public double costStaticDiv = 20;
+    public double logBase = 23;
+    public double goldDropCostDivider=2;
 
     void Start()
     {
@@ -82,61 +84,177 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
 
         calculateDPCcost();
 
-        if(DPC_PERKS <=140)
-        {
-            player.PERK_DPC = System.Math.Ceiling(10 * (DPC_PERKS - 1 + System.Math.Pow(1.55f,DPC_PERKS-1)));
-        }
-        else if(DPC_PERKS > 140  && DPC_PERKS <=500)
-        {
-            player.PERK_DPC = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f,139) * System.Math.Pow(1.145f,DPC_PERKS - 140) ));
-        }
-        else if(DPC_PERKS > 500 && DPC_PERKS <= 200000)
-        {
-            double product = 1;
-            for(int i = 501; i <DPC_PERKS; i++)
-            {
-                product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
-            }
 
-            player.PERK_DPC = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * (float)product) );
+        double mult = 5f;
 
-
-        }
-        else
+        if (DPC_PERKS > 100)
         {
-            player.PERK_DPC = System.Math.Ceiling(System.Math.Pow(1.545f, DPC_PERKS - 200001) * 1.240f * System.Math.Pow(10, 25409) + (DPC_PERKS - 1) * 10);
+            mult = 8f;
+        }
+        else if (DPC_PERKS > 200)
+        {
+            mult = 20f;
+        }
+        else if (DPC_PERKS > 300)
+        {
+            mult = 60f;
+        }
+        else if (DPC_PERKS > 400)
+        {
+            mult = 100f;
+        }
+        else if (DPC_PERKS > 500)
+        {
+            mult = 150f;
+        }
+        else if (DPC_PERKS > 600)
+        {
+            mult = 300f;
+        }
+        else if(DPC_PERKS >700)
+        {
+            mult = 500f;
+        }
+        else if(DPC_PERKS > 800)
+        {
+            mult = 800f;
+        }
+        else if(DPC_PERKS>900)
+        {
+            mult = 1000f;
+        }
+        else if(DPC_PERKS > 1000)
+        {
+            mult = 1200f;
         }
 
+        player.PERK_DPC = 500 + mult * DPC_PERKS * DPC_PERKS + mult * DPC_PERKS / 2f;
+
+
+    }
+    public double DPC_formula(int lvl)
+    {
+        double mult = 5f;
+
+        if (lvl > 100)
+        {
+            mult = 8f;
+        }
+        else if (lvl > 200)
+        {
+            mult = 20f;
+        }
+        else if (lvl > 300)
+        {
+            mult = 60f;
+        }
+        else if (lvl > 400)
+        {
+            mult = 100f;
+        }
+        else if (lvl > 500)
+        {
+            mult = 150f;
+        }
+        else if (lvl > 600)
+        {
+            mult = 300f;
+        }
+        else if (lvl > 700)
+        {
+            mult = 500f;
+        }
+        else if (lvl > 800)
+        {
+            mult = 800f;
+        }
+        else if (lvl > 900)
+        {
+            mult = 1000f;
+        }
+        else if (lvl > 1000)
+        {
+            mult = 1200f;
+        }
+
+        return (500 + mult * lvl * lvl + mult * lvl / 2f)*System.Math.Pow(10,player.RESET_POINTS_DPC);
     }
 
     public void calculateDPS()
     {
         calculateDPScost();
+        /*
+                if (DPS_PERKS <= 140)
+                {
+                    player.PERK_DPS = System.Math.Ceiling(10 * (DPS_PERKS - 1 + System.Math.Pow(1.55f, DPS_PERKS - 1)));
+                }
+                else if (DPS_PERKS > 140 && DPS_PERKS <= 500)
+                {
+                    player.PERK_DPS = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, DPS_PERKS - 140)));
+                }
+                else if (DPS_PERKS > 500 && DPS_PERKS <= 200000)
+                {
+                    double product = 1;
+                    for (int i = 501; i < DPS_PERKS; i++)
+                    {
+                        product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
+                    }
 
-        if (DPS_PERKS <= 140)
-        {
-            player.PERK_DPS = System.Math.Ceiling(10 * (DPS_PERKS - 1 + System.Math.Pow(1.55f, DPS_PERKS - 1)));
-        }
-        else if (DPS_PERKS > 140 && DPS_PERKS <= 500)
-        {
-            player.PERK_DPS = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, DPS_PERKS - 140)));
-        }
-        else if (DPS_PERKS > 500 && DPS_PERKS <= 200000)
-        {
-            double product = 1;
-            for (int i = 501; i < DPS_PERKS; i++)
-            {
-                product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
-            }
-
-            player.PERK_DPS = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * product));
+                    player.PERK_DPS = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * product));
 
 
-        }
-        else
+                }
+                else
+                {
+                    player.PERK_DPS = System.Math.Ceiling(System.Math.Pow(1.545f, DPS_PERKS - 200001) * 1.240f * System.Math.Pow(10, 25409) + (DPS_PERKS - 1) * 10);
+                }*/
+
+
+        double mult = 5f;
+
+        if (DPS_PERKS > 100)
         {
-            player.PERK_DPS = System.Math.Ceiling(System.Math.Pow(1.545f, DPS_PERKS - 200001) * 1.240f * System.Math.Pow(10, 25409) + (DPS_PERKS - 1) * 10);
+            mult = 8f;
         }
+        else if (DPS_PERKS > 200)
+        {
+            mult = 20f;
+        }
+        else if (DPS_PERKS > 300)
+        {
+            mult = 60f;
+        }
+        else if (DPS_PERKS > 400)
+        {
+            mult = 100f;
+        }
+        else if (DPS_PERKS > 500)
+        {
+            mult = 150f;
+        }
+        else if (DPS_PERKS > 600)
+        {
+            mult = 300f;
+        }
+        else if (DPS_PERKS > 700)
+        {
+            mult = 500f;
+        }
+        else if (DPS_PERKS > 800)
+        {
+            mult = 800f;
+        }
+        else if (DPS_PERKS > 900)
+        {
+            mult = 1000f;
+        }
+        else if (DPS_PERKS > 1000)
+        {
+            mult = 1200f;
+        }
+
+        player.PERK_DPS = 500 + mult * DPS_PERKS * DPS_PERKS + mult * DPS_PERKS / 2f;
+
     }
 
 
@@ -145,30 +263,78 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
 
         calculateHPcost();
 
-        if (HP_PERKS <= 140)
-        {
-            player.PERK_HP = System.Math.Ceiling(10 * (HP_PERKS - 1 + System.Math.Pow(1.55f, HP_PERKS - 1)));
-        }
-        else if (HP_PERKS > 140 && HP_PERKS <= 500)
-        {
-            player.PERK_HP = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, HP_PERKS - 140)));
-        }
-        else if (HP_PERKS > 500 && HP_PERKS <= 200000)
-        {
-            double product = 1;
-            for (int i = 501; i < HP_PERKS; i++)
-            {
-                product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
-            }
+        /*        if (HP_PERKS <= 140)
+                {
+                    player.PERK_HP = System.Math.Ceiling(10 * (HP_PERKS - 1 + System.Math.Pow(1.55f, HP_PERKS - 1)));
+                }
+                else if (HP_PERKS > 140 && HP_PERKS <= 500)
+                {
+                    player.PERK_HP = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, HP_PERKS - 140)));
+                }
+                else if (HP_PERKS > 500 && HP_PERKS <= 200000)
+                {
+                    double product = 1;
+                    for (int i = 501; i < HP_PERKS; i++)
+                    {
+                        product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
+                    }
 
-            player.PERK_HP = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * product));
+                    player.PERK_HP = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * product));
 
 
-        }
-        else
+                }
+                else
+                {
+                    player.PERK_HP = System.Math.Ceiling(System.Math.Pow(1.545f, HP_PERKS - 200001) * 1.240f * System.Math.Pow(10, 25409) + (HP_PERKS - 1) * 10);
+                }*/
+
+
+        double mult = 5f;
+
+        if (HP_PERKS > 100)
         {
-            player.PERK_HP = System.Math.Ceiling(System.Math.Pow(1.545f, HP_PERKS - 200001) * 1.240f * System.Math.Pow(10, 25409) + (HP_PERKS - 1) * 10);
+            mult = 10f;
         }
+        else if (HP_PERKS > 200)
+        {
+            mult = 40f;
+        }
+        else if (HP_PERKS > 300)
+        {
+            mult = 60f;
+        }
+        else if (HP_PERKS > 400)
+        {
+            mult = 100f;
+        }
+        else if (HP_PERKS > 500)
+        {
+            mult = 200f;
+        }
+        else if (HP_PERKS > 600)
+        {
+            mult = 400f;
+        }
+        else if (HP_PERKS > 700)
+        {
+            mult = 800f;
+        }
+        else if (HP_PERKS > 800)
+        {
+            mult = 1600f;
+        }
+        else if (HP_PERKS > 900)
+        {
+            mult = 3200f;
+        }
+        else if (HP_PERKS > 1000)
+        {
+            mult = 6400f;
+        }
+
+        player.PERK_HP = 500 + mult * HP_PERKS * HP_PERKS + mult * HP_PERKS / 2f;
+
+
     }
 
     public void calculateARMOR()
@@ -225,33 +391,12 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
     {
         double L;
 
-        //Debug.Log(level);
+        //wielomianowe koszty
 
-        if (level <= 140)
-        {
-            L = System.Math.Ceiling(10 * (level - 1 + System.Math.Pow(1.55f, level - 1)));
-        }
-        else if (level > 140 && level <= 500)
-        {
-            L = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, level - 140)));
-        }
-        else if (level > 500 && level <= 200000)
-        {
-            double product = 1;
-            for (int i = 501; i < level; i++)
-            {
-                product *= (1.145 + 0.001 * Mathf.Floor((i - 1) / 500));
-            }
+        double mult = 1000f;
+        double exp = 1.12;
 
-            L = System.Math.Ceiling(10 * (139 + System.Math.Pow(1.55f, 139) * System.Math.Pow(1.145f, 360) * product));
-
-
-        }
-        else
-        {
-            L = System.Math.Ceiling(System.Math.Pow(1.545f, level - 200001) * 1.240f * System.Math.Pow(10, 25409) + (level - 1) * 10);
-        }
-
+        L = mult *level * level + System.Math.Pow(exp, level) + 5*player.perks.DPC_formula(level) + System.Math.Ceiling((level / 100) * player.perks.DPC_formula(level));
 
         return L;
     }
@@ -280,14 +425,16 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
 
     public void calculateDPCcost()
     {
-        if (DPC_PERKS < 75)
+
+        double goldDrop = player.player.enemy.enemyGoldFormula(DPC_PERKS); 
+
+        DPC_PERK_COST = System.Math.Max(((basedOnEnemyHP(DPC_PERKS) / costStaticDiv) * System.Math.Max(System.Math.Log(DPC_PERKS, logBase), 1) * DPC_PERK_COST_MULT * PERK_COST_MULTIPLIER),
+                                             goldDrop / goldDropCostDivider);
+/*        if (DPC_PERKS > 75)
         {
-            DPC_PERK_COST = (basedOnEnemyHP(DPC_PERKS) / 15) * DPC_PERK_COST_MULT * PERK_COST_MULTIPLIER;
-        }
-        else
-        {
-            DPC_PERK_COST = (basedOnEnemyHP(DPC_PERKS) / 15) * DPC_PERK_COST_MULT * System.Math.Min(3, System.Math.Pow(1.025f, DPC_PERKS - 75)) * PERK_COST_MULTIPLIER;
-        }
+            DPC_PERK_COST *= 2;
+        }*/
+
 
         if(player.specialPerks.PERK_COST_REDUCTION > 0)
         DPC_PERK_COST *= (1 - player.specialPerks.PERK_COST_REDUCTION * PERK_COST_REDUCTION);
@@ -297,43 +444,47 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
 
     public void calculateDPScost()
     {
-        if (DPS_PERKS < 75)
+        double goldDrop = player.player.enemy.enemyGoldFormula(DPS_PERKS);
+
+        DPS_PERK_COST = System.Math.Max(((basedOnEnemyHP(DPS_PERKS) / costStaticDiv) * System.Math.Max(System.Math.Log(DPS_PERKS, logBase), 1) * DPS_PERK_COST_MULT * PERK_COST_MULTIPLIER),
+                                goldDrop/ goldDropCostDivider);
+/*        if (DPS_PERKS > 75)
         {
-            DPS_PERK_COST = (basedOnEnemyHP(DPS_PERKS) / 15) * DPS_PERK_COST_MULT * PERK_COST_MULTIPLIER;
-        }
-        else
-        {
-            DPS_PERK_COST = (basedOnEnemyHP(DPS_PERKS) / 15) * DPS_PERK_COST_MULT * System.Math.Min(3, System.Math.Pow(1.025f, DPS_PERKS - 75)) * PERK_COST_MULTIPLIER;
-        }
+            DPS_PERK_COST *= 2;
+        }*/
+
 
         if (player.specialPerks.PERK_COST_REDUCTION > 0)
-        DPS_PERK_COST *= (1 - player.specialPerks.PERK_COST_REDUCTION * PERK_COST_REDUCTION);
+            DPS_PERK_COST *= (1 - player.specialPerks.PERK_COST_REDUCTION * PERK_COST_REDUCTION);
     }
 
     public void calculateHPcost()
     {
-        if (HP_PERKS < 75)
+        double goldDrop = player.player.enemy.enemyGoldFormula(HP_PERKS);
+
+        HP_PERK_COST = System.Math.Max(((basedOnEnemyHP(HP_PERKS) / costStaticDiv) * System.Math.Max(System.Math.Log(HP_PERKS, logBase), 1) * HP_PERK_COST_MULT * PERK_COST_MULTIPLIER),
+                                        goldDrop / goldDropCostDivider);
+/*        if (HP_PERKS > 75)
         {
-            HP_PERK_COST = (basedOnEnemyHP(HP_PERKS) / 15) * HP_PERK_COST_MULT * PERK_COST_MULTIPLIER;
-        }
-        else
-        {
-            HP_PERK_COST = (basedOnEnemyHP(HP_PERKS) / 15) * HP_PERK_COST_MULT * System.Math.Min(3, System.Math.Pow(1.025f, HP_PERKS - 75)) * PERK_COST_MULTIPLIER;
-        }
+            HP_PERK_COST *= 2;
+        }*/
+
+
         if (player.specialPerks.PERK_COST_REDUCTION > 0)
             HP_PERK_COST *= (1 - player.specialPerks.PERK_COST_REDUCTION * PERK_COST_REDUCTION);
     }
 
     public void calculateARRMORcost()
     {
-        if (ARMOR_PERKS < 75)
+        double goldDrop = player.player.enemy.enemyGoldFormula(ARMOR_PERKS + player.RESET_ARMOR_COST_MULT);
+
+        ARMOR_PERK_COST = System.Math.Max(((basedOnEnemyHP(ARMOR_PERKS + player.RESET_ARMOR_COST_MULT) / costStaticDiv) * System.Math.Max(System.Math.Log(ARMOR_PERKS + player.RESET_ARMOR_COST_MULT, logBase), 1) * ARMOR_PERK_COST_MULT * PERK_COST_MULTIPLIER),
+                                            goldDrop / goldDropCostDivider);
+/*        if (ARMOR_PERKS > 75)
         {
-            ARMOR_PERK_COST = (basedOnEnemyHPforArmor(ARMOR_PERKS) / 15) * ARMOR_PERK_COST_MULT * PERK_COST_MULTIPLIER;
-        }
-        else
-        {
-            ARMOR_PERK_COST = (basedOnEnemyHPforArmor(ARMOR_PERKS) / 15) * ARMOR_PERK_COST_MULT * System.Math.Min(3, System.Math.Pow(1.025f, ARMOR_PERKS - 75)) * PERK_COST_MULTIPLIER;
-        }
+            ARMOR_PERK_COST *= 3;
+        }*/
+
 
         if (player.specialPerks.PERK_COST_REDUCTION > 0)
             ARMOR_PERK_COST *= (1 - player.specialPerks.PERK_COST_REDUCTION * PERK_COST_REDUCTION);
@@ -351,6 +502,15 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
         calculateDPS();
         calculateHP();
         calculateARMOR();
+    }
+
+
+    public void calculateAll()
+    {
+        calculateARMOR();
+        calculateDPC();
+        calculateDPS();
+        calculateHP();
     }
 
 
@@ -393,6 +553,12 @@ public class PlayerPerks : MonoBehaviour,IDataPersistence
         calculateARRMORcost();
         calculateHPcost();
     }
+
+    public void afterLoadData()
+    {
+        calculateAll();
+    }
+
 }
 
 

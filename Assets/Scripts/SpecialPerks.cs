@@ -14,7 +14,7 @@ public class SpecialPerks : MonoBehaviour, IDataPersistence
 
     public int MERC_PASSIVE_BOOST;
 
-    public int BOSS_HP_REDUCTION;
+    public int ENEMY_HP_REDUCTION;
 
     public void LoadData(GameData data)
     {
@@ -23,7 +23,7 @@ public class SpecialPerks : MonoBehaviour, IDataPersistence
         this.PERK_COST_REDUCTION = data.PERK_COST_REDUCTION;
         this.MERC_COST_REDUCTION = data.MERC_COST_REDUCTION;
         this.MERC_PASSIVE_BOOST = data.MERC_PASSIVE_BOOST;
-        this.BOSS_HP_REDUCTION = data.BOSS_HP_REDUCTION;
+        this.ENEMY_HP_REDUCTION = data.ENEMY_HP_REDUCTION;
     }
 
     public void SaveData(GameData data)
@@ -33,10 +33,13 @@ public class SpecialPerks : MonoBehaviour, IDataPersistence
         data.PERK_COST_REDUCTION = this.PERK_COST_REDUCTION;
         data.MERC_COST_REDUCTION = this.MERC_COST_REDUCTION;
         data.MERC_PASSIVE_BOOST = this.MERC_PASSIVE_BOOST;
-        data.BOSS_HP_REDUCTION = this.BOSS_HP_REDUCTION;
+        data.ENEMY_HP_REDUCTION = this.ENEMY_HP_REDUCTION;
 
     }
 
-
+    public void afterLoadData()
+    {
+        ;
+    }
 
 }
